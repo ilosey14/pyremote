@@ -8,7 +8,7 @@ import mouse
 import keyboard
 
 public_root = path.join(path.dirname(path.realpath(__file__)), 'public')
-hostname = 'localhost' #gethostbyname_ex(gethostname())[-1][-1] # https://stackoverflow.com/a/166520
+hostname = gethostbyname_ex(gethostname())[-1][-1] # https://stackoverflow.com/a/166520
 port = 8080
 
 class RequestHandler(BaseHTTPRequestHandler):
