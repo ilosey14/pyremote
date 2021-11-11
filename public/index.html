@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<title>PyRemote</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<header>📱 PyRemote</header>
+	<main>
+		<div id="touch-container">
+			<button id="touch-pad"></button>
+			<div id="scroll-bar">
+				<button id="scroll-up">
+					<img src="/img/arrow-up.svg" alt="scroll up">
+				</button>
+				<button id="scroll-pad"></button>
+				<button id="scroll-down">
+					<img src="/img/arrow-down.svg" alt="scroll down">
+				</button>
+			</div>
+		</div>
+		<div id="button-container">
+			<button data-action="back">
+				<img src="/img/arrow-left.svg" alt="back">
+			</button>
+			<button data-action="menu">
+				<img src="/img/menu.svg" alt="open menu">
+			</button>
+			<button data-action="forward">
+				<img src="/img/arrow-right.svg" alt="forward">
+			</button>
+		</div>
+		<div id="text-container">
+			<form id="text-form">
+				<div class="text-wrapper">
+					<input type="text" id="text-input" placeholder="...">
+				</div>
+				<button type="reset">
+					<img src="/img/x.svg" alt="clear">
+				</button>
+			</form>
+		</div>
+	</main>
+	<div id="menu">
+		<div>
+			<button data-action="menu">
+				<img src="/img/x.svg" alt="close menu">
+			</button>
+		</div>
+
+		<button data-action="click" data-value="0">
+			<img src="/img/click.svg" alt="left click">
+		</button>
+		<button data-action="click" data-value="1">
+			<img src="/img/mclick.svg" alt="middle click">
+		</button>
+		<button data-action="click" data-value="2">
+			<img src="/img/rclick.svg" alt="right click">
+		</button>
+		<button data-action="dblclick">
+			<img src="/img/dbclick.svg" alt="double click">
+		</button>
+
+		<button data-action="key" data-value="windows">
+			<img src="/img/windows.svg" alt="windows">
+		</button>
+		<button data-action="key" data-value="escape">Esc</button>
+		<button data-action="key" data-value="delete">Del</button>
+		<button data-action="key" data-value="enter">
+			<img src="/img/enter.svg" alt="enter">
+		</button>
+		<button data-action="key" data-value="tab">Tab</button>
+
+		<div><!-- empty --></div>
+	</div>
+	<script src="pyremote.js"></script>
+</body>
+</html>
