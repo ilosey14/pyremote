@@ -21,6 +21,8 @@ Server started at http://[your_ip]:8080
 ...
 ```
 
+> Note: on Linux systems, user inputs require root permissions
+
 2. Connect to your pyremote server from another device in a web browser
 
 3. Stop the server with `Ctrl+C`
@@ -81,6 +83,16 @@ $ cd pyremote
 
 I recommend adding a shortcut to your start menu or desktop.
 Set the icon from `public/favicon.ico`
+
+### Linux
+
+Currently, the `mouse` package needs to be modified to support mouse clicks.
+See <a href="https://github.com/boppreh/mouse/issues/37" target="_blank">this</a> GitHub issue for more info,
+which was corrected by <a href="https://github.com/boppreh/mouse/commit/9c5630f0d9d6f4f76cf56291ce3f864e87ad1105" target="_blank">this</a> commit.
+
+However, until the pip package is updated, the easiest fix is to copy over the updated source.
+The file will be located at `/usr/lib/python3.X/site-packages/mouse/_nixcommon.py` or similar.
+The updated source can be found <a href="https://raw.githubusercontent.com/boppreh/mouse/9c5630f0d9d6f4f76cf56291ce3f864e87ad1105/mouse/_nixcommon.py" target="_blank">here</a>.
 
 ## TODO
 

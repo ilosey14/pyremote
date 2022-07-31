@@ -1,14 +1,15 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from os import path
-from socket import gethostbyname_ex, gethostname
 from urllib.parse import urlparse, parse_qs
 from mimetypes import guess_type
 
 import mouse
 import keyboard
 
+from utils import ip
+
 public_root = path.join(path.dirname(path.realpath(__file__)), 'public')
-hostname = gethostbyname_ex(gethostname())[-1][-1] # https://stackoverflow.com/a/166520
+hostname = ip.get_local()
 port = 8080
 
 class RequestHandler(BaseHTTPRequestHandler):
@@ -123,6 +124,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.write_headers()
 
 if __name__ == '__main__':
+    if not hostname:
+        raise ValueError('Could not get local network ip for hosting.')
+
     httpd = HTTPServer((hostname, port), RequestHandler)
     print(f'Server started at http://{hostname}:{port}')
 
