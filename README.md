@@ -94,6 +94,9 @@ However, until the pip package is updated, the easiest fix is to copy over the u
 The file will be located at `/usr/lib/python3.X/site-packages/mouse/_nixcommon.py` or similar.
 The updated source can be found <a href="https://raw.githubusercontent.com/boppreh/mouse/9c5630f0d9d6f4f76cf56291ce3f864e87ad1105/mouse/_nixcommon.py" target="_blank">here</a>.
 
+If the up-to-date source does not work, you may instead revert the `_nixcommon.py` file back to its original form and explicitly add your desired event codes.
+The complete list is defined in `/usr/include/linux/input-event-codes.h`.
+
 ## TODO
 
 - [ ] Check for connection

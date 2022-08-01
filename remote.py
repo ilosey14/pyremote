@@ -2,6 +2,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from os import path
 from urllib.parse import urlparse, parse_qs
 from mimetypes import guess_type
+import math
 
 import mouse
 import keyboard
@@ -111,14 +112,14 @@ class RequestHandler(BaseHTTPRequestHandler):
     def do_SCROLL(self):
         delta = self.parse_params(('d', float))
 
-        mouse.wheel(delta)
+        mouse.wheel(math.ceil(delta))
         self.write_headers()
 
     def do_KEY(self):
         key = self.parse_params('k')
 
         if key.isupper():
-            key = 'shift+' + key
+            key = 'shift+' + key.lower()
 
         keyboard.send(key)
         self.write_headers()
