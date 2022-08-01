@@ -21,7 +21,7 @@ Server started at http://[your_ip]:8080
 ...
 ```
 
-> Note: on Linux systems, user inputs require root permissions
+> Note: on Linux systems, user inputs require root permissions or a `udev` rule (see Installation below)
 
 2. Connect to your pyremote server from another device in a web browser
 
@@ -86,7 +86,11 @@ Set the icon from `public/favicon.ico`
 
 ### Linux
 
-Currently, the `mouse` package needs to be modified to support mouse clicks.
+*This section details my workarounds for mouse support and user-level input access.*
+
+#### Supporting Mouse Clicks
+
+The `mouse` package may need to be modified to support mouse clicks.
 See <a href="https://github.com/boppreh/mouse/issues/37" target="_blank">this</a> GitHub issue for more info,
 which was corrected by <a href="https://github.com/boppreh/mouse/commit/9c5630f0d9d6f4f76cf56291ce3f864e87ad1105" target="_blank">this</a> commit.
 
@@ -96,6 +100,47 @@ The updated source can be found <a href="https://raw.githubusercontent.com/boppr
 
 If the up-to-date source does not work, you may instead revert the `_nixcommon.py` file back to its original form and explicitly add your desired event codes.
 The complete list is defined in `/usr/include/linux/input-event-codes.h`.
+For example:
+
+```diff
+/usr/lib/python3.X/site-packages/mouse/_nixcommon.py
+@@ -32,2 +32,5 @@
+---
+* [32][32]     for i in range(256):
+* [33][33]         fcntl.ioctl(uinput, UI_SET_KEYBIT, i)
++     [34]     fcntl.ioctl(uinput, UI_SET_KEYBIT, 0X110) # BTN_LEFT
++     [35]     fcntl.ioctl(uinput, UI_SET_KEYBIT, 0X111) # BTN_RIGHT
++     [36]     fcntl.ioctl(uinput, UI_SET_KEYBIT, 0X112) # BTN_MIDDLE
+```
+
+#### Permissions
+
+You can permit user access to the `uinput` kernel module without elevation (sudo, su, doas, etc.)
+by adding a new `udev` rule.
+
+```rules
+/etc/udev/rules.d/50-uinput.rules
+---
+KERNEL="uinput", TAG+="uaccess"
+```
+
+The `mouse` and `keyboard` packages look for an elevated run-level rather than `uinput` access.
+Force these checks to pass by further editing the `_nixcommon.py` files:
+
+```python
+# /usr/lib/python3.X/site-packages/{mouse,keyboard}/_nixcommon.py
+...
+def ensure_root():
+    return True
+    # comment original code
+```
+
+Discussions on user access to `uinput`:
+- [Stack Overflow](https://stackoverflow.com/questions/11939255/writing-to-dev-uinput-on-ubuntu-12-04)
+- [Steam Forums](https://steamcommunity.com/app/353370/discussions/2/1735465524711324558/)
+
+Further info on `udev` rules:
+- [Arch Wiki](https://wiki.archlinux.org/title/Udev)
 
 ## TODO
 
