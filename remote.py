@@ -1,6 +1,6 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from os import path
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, unquote
 from mimetypes import guess_type
 import math
 
@@ -116,12 +116,13 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.write_headers()
 
     def do_KEY(self):
-        key = self.parse_params('k')
+        key = self.parse_params(('k', unquote))
 
-        if key.isupper():
-            key = 'shift+' + key.lower()
+        if len(key) > 1:
+            keyboard.send(key)
+        else:
+            keyboard.write(key)
 
-        keyboard.send(key)
         self.write_headers()
 
 if __name__ == '__main__':
