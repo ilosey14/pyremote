@@ -119,6 +119,7 @@ let $ = a => document.getElementById(a),
 	textForm = $('text-form'),
 	textInput = $('text-input'),
 	menu = $('menu'),
+	menuMask = $('menu-mask'),
 	actionButtons = document.querySelectorAll('[data-action]'),
 	touch = new Pointer(3),
 	scroll = new Pointer(0.2),
@@ -208,8 +209,13 @@ scrollUp.onclick = function () {
 // set button actions
 
 textForm.onsubmit = e => e.preventDefault();
-textInput.onkeyup = e => remote.key(e.key);
+textInput.onkeyup = e => {
+	remote.key(e.key);
+	if (e.key === 'Enter') e.target.value = null;
+};
+textInput.onfocus = () => window.scrollTo({ top: textInput.offsetTop })
 textInput.onblur = () => window.scrollTo({ top: 0 });
+menuMask.onclick = () => remote.menu();
 
 for (let button of actionButtons) {
 	let { action, value } = button.dataset;

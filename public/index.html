@@ -36,7 +36,7 @@
 		<div id="text-container">
 			<form id="text-form">
 				<div class="text-wrapper">
-					<input type="text" id="text-input" placeholder="...">
+					<input type="text" id="text-input" placeholder="..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
 				</div>
 				<button type="reset">
 					<img src="/img/x.svg" alt="clear">
@@ -45,37 +45,51 @@
 		</div>
 	</main>
 	<div id="menu">
-		<div>
-			<button data-action="menu">
-				<img src="/img/x.svg" alt="close menu">
+		<div id="menu-grid">
+			<div>
+				<button data-action="menu" style="border-radius:100%">
+					<img src="/img/x.svg" alt="close menu">
+				</button>
+			</div>
+			<button data-action="click" data-value="0">
+				<img src="/img/click.svg" alt="left click">
+			</button>
+			<button data-action="click" data-value="1">
+				<img src="/img/mclick.svg" alt="middle click">
+			</button>
+			<button data-action="click" data-value="2">
+				<img src="/img/rclick.svg" alt="right click">
+			</button>
+			<button data-action="dblclick">
+				<img src="/img/dbclick.svg" alt="double click">
+			</button>
+			<button data-action="key" data-value="windows">
+				<img src="/img/windows.svg" alt="windows">
+			</button>
+			<button data-action="key" data-value="escape">Esc</button>
+			<button data-action="key" data-value="delete">Del</button>
+			<button data-action="key" data-value="enter">
+				<img src="/img/enter.svg" alt="enter">
+			</button>
+			<button data-action="key" data-value="tab">Tab</button>
+			<div></div>
+			<button data-action="key" data-value="up">
+				<img src="/img/arrow-up.svg" alt="up arrow">
+			</button>
+			<div></div>
+			<div></div>
+			<button data-action="key" data-value="left">
+				<img src="/img/arrow-left.svg" alt="up arrow">
+			</button>
+			<button data-action="key" data-value="down">
+				<img src="/img/arrow-down.svg" alt="up arrow">
+			</button>
+			<button data-action="key" data-value="right">
+				<img src="/img/arrow-right.svg" alt="up arrow">
 			</button>
 		</div>
-
-		<button data-action="click" data-value="0">
-			<img src="/img/click.svg" alt="left click">
-		</button>
-		<button data-action="click" data-value="1">
-			<img src="/img/mclick.svg" alt="middle click">
-		</button>
-		<button data-action="click" data-value="2">
-			<img src="/img/rclick.svg" alt="right click">
-		</button>
-		<button data-action="dblclick">
-			<img src="/img/dbclick.svg" alt="double click">
-		</button>
-
-		<button data-action="key" data-value="windows">
-			<img src="/img/windows.svg" alt="windows">
-		</button>
-		<button data-action="key" data-value="escape">Esc</button>
-		<button data-action="key" data-value="delete">Del</button>
-		<button data-action="key" data-value="enter">
-			<img src="/img/enter.svg" alt="enter">
-		</button>
-		<button data-action="key" data-value="tab">Tab</button>
-
-		<div><!-- empty --></div>
 	</div>
+	<div id="menu-mask"></div>
 	<script src="pyremote.js"></script>
 </body>
 </html>
