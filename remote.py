@@ -120,8 +120,22 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         if len(key) > 1:
             keyboard.send(key)
+        # capital letters must use shift
+        elif key >= 'A' and key <= 'Z':
+            keyboard.send(f'shift+{key.lower()}')
+        # handle irregularities
+        elif key in '[]\\':
+            keyboard.send(keyboard.key_to_scan_codes(key)[-1])
+        elif key in '{}~':
+            code = keyboard.key_to_scan_codes(key)[-1]
+            keyboard.press('shift')
+            keyboard.send(code)
+            keyboard.release('shift')
         else:
-            keyboard.write(key)
+            try:
+                keyboard.write(key)
+            except:
+                print(f'Unsupported key "{key}".')
 
         self.write_headers()
 
