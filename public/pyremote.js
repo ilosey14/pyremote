@@ -1,16 +1,19 @@
-window.onerror = function () {
+window.addEventListener('error', function () {
 	alert(Array.from(arguments).join('\n'))
-};
+});
 
 (function () {
 
-const remote = {
+const buttons = {
 	DBLCLICK: -1,
 	LEFT: 0,
 	MIDDLE: 1,
 	RIGHT: 2,
 	BACK: 3,
-	FORWARD: 4,
+	FORWARD: 4
+};
+const keyState = { };
+const remote = {
 	move: (x, y) => request('MOVE', { x, y }),
 	down: () => request('DOWN'),
 	up: () => request('UP'),
@@ -18,13 +21,17 @@ const remote = {
 	dblclick: () => request('DBLCLICK'),
 	scroll: d => request('SCROLL', { d }),
 	key: k => request('KEY', { k }),
+	keyWithModifiers: k => remote.key(Object.keys(keyState).filter(key => keyState[key]).join('+') + '+' + k),
+	toggleModifier: (key, state) => keyState[key] = (state === undefined) ? !keyState[key] : (state === 'true'),
+	resetModifiers: () => Object.keys(keyState).forEach(key => delete keyState[key]),
 	back: () => remote.key('alt+left'),
 	forward: () => remote.key('alt+right'),
-	menu: () => menu.classList.toggle('show')
+	menu: () => menu.classList.toggle('show'),
+	popup: name => showPopup(name)
 };
 
 function request(method, data) {
-	let url = data
+	const url = data
 		? '/?' + new URLSearchParams(data).toString()
 		: '/';
 
@@ -73,7 +80,7 @@ Pointer.rClickDelay = 500;
  * @param {number} y
  */
 Pointer.prototype.setDown = function (x, y) {
-	let now = Date.now();
+	const now = Date.now();
 
 	this.lastX = x;
 	this.lastY = y;
@@ -101,7 +108,7 @@ Pointer.prototype.setMove = function (x, y) {
  * @param {number} y
  */
 Pointer.prototype.setUp = function (x, y) {
-	let now = Date.now();
+	const now = Date.now();
 
 	this.lastX = x;
 	this.lastY = y;
@@ -111,33 +118,31 @@ Pointer.prototype.setUp = function (x, y) {
 };
 
 // init
-let $ = a => document.getElementById(a),
-	touchPad = $('touch-pad'),
-	scrollPad = $('scroll-pad'),
-	scrollDown = $('scroll-down'),
-	scrollUp = $('scroll-up'),
-	textForm = $('text-form'),
-	textInput = $('text-input'),
-	menu = $('menu'),
-	menuMask = $('menu-mask'),
-	actionButtons = document.querySelectorAll('[data-action]'),
-	touch = new Pointer(3),
-	scroll = new Pointer(0.2),
-	round = (x, digits = 0) => {
-		let factor = Math.pow(10, digits);
-		return Math.round(factor * x) / factor;
-	};
-
-// set up touch actions
-touchPad.onpointerdown = function (e) {
-	touch.setDown(e.clientX, e.clientY);
+const $ = a => document.getElementById(a);
+const touchPad = $('touch-pad');
+const scrollPad = $('scroll-pad');
+const scrollDown = $('scroll-down');
+const scrollUp = $('scroll-up');
+const textForm = $('text-form');
+const textInput = $('text-input');
+const menu = $('menu');
+const menuMask = $('menu-mask');
+const touch = new Pointer(3);
+const scroll = new Pointer(0.2);
+const round = (x, digits = 0) => {
+	const factor = Math.pow(10, digits);
+	return Math.round(factor * x) / factor;
 };
 
-touchPad.onpointermove = debounce(function (e) {
+// set up touch actions
+
+touchPad.addEventListener('pointerdown', e => touch.setDown(e.clientX, e.clientY));
+
+touchPad.addEventListener('pointermove', debounce(e => {
 	if (!touch.isDown) return;
 
-	let dx = touch.scale * (e.clientX - touch.lastX),
-		dy = touch.scale * (e.clientY - touch.lastY);
+	const dx = touch.scale * (e.clientX - touch.lastX);
+	const dy = touch.scale * (e.clientY - touch.lastY);
 
 	// ignore sending no debounced movement
 	if (dx === 0 && dy === 0) return;
@@ -148,9 +153,9 @@ touchPad.onpointermove = debounce(function (e) {
 
 	remote.move(dx, dy);
 	touch.setMove(e.clientX, e.clientY);
-}, 100);
+}, 100));
 
-touchPad.onpointerup = function(e) {
+touchPad.addEventListener('pointerup', e => {
 	touch.setUp(e.clientX, e.clientY)
 
 	// ignore drag
@@ -162,65 +167,97 @@ touchPad.onpointerup = function(e) {
 	}
 
 	// check for right click
-	let button = e.button;
-
-	if (touch.isRClick)
-		button = remote.RIGHT;
+	const button = touch.isRClick
+		? buttons.RIGHT
+		: e.button;
 
 	// invoke action
 	switch (button) {
-		case remote.LEFT:
-		case remote.MIDDLE:
-		case remote.RIGHT:
+		case buttons.LEFT:
+		case buttons.MIDDLE:
+		case buttons.RIGHT:
 			remote.click(button);
 			break;
-		case remote.BACK:
+		case buttons.BACK:
 			remote.back();
 			break;
-		case remote.FORWARD:
+		case buttons.FORWARD:
 			remote.forward();
 			break;
 	}
-};
+});
 
-scrollPad.onpointerdown = function (e) {
-	scroll.setDown(0, e.clientY);
-};
+scrollPad.addEventListener('pointerdown', e => scroll.setDown(0, e.clientY));
 
-scrollPad.onpointermove = debounce(function (e) {
+scrollPad.addEventListener('pointermove', debounce(e => {
 	// can invert scrolling with negative scale
-	let dy = round(scroll.scale * (e.clientY - scroll.lastY), 1);
+	const dy = round(scroll.scale * (e.clientY - scroll.lastY), 1);
 
 	// ignore sending no debounced movement
 	if (!dy) return;
 
 	scroll.setUp(0, e.clientY);
 	remote.scroll(dy);
-}, 100);
+}, 100));
 
-scrollDown.onclick = function () {
-	remote.scroll(-scroll.scale);
-};
+scrollDown.addEventListener('click', () => remote.scroll(-scroll.scale));
+scrollUp.addEventListener('click', () => remote.scroll(scroll.scale));
 
-scrollUp.onclick = function () {
-	remote.scroll(scroll.scale);
-};
+textForm.addEventListener('submit', e => e.preventDefault());
 
-// set button actions
-
-textForm.onsubmit = e => e.preventDefault();
-textInput.onkeyup = e => {
+textInput.addEventListener('keyup', e => {
 	remote.key(e.key);
 	if (e.key === 'Enter') e.target.value = null;
-};
-textInput.onfocus = () => window.scrollTo({ top: textInput.offsetTop })
-textInput.onblur = () => window.scrollTo({ top: 0 });
-menuMask.onclick = () => remote.menu();
+});
 
-for (let button of actionButtons) {
-	let { action, value } = button.dataset;
+textInput.addEventListener('focus', () => window.scrollTo({ top: textInput.offsetTop }));
+textInput.addEventListener('blur', () => window.scrollTo({ top: 0 }));
+menuMask.addEventListener('click', () => remote.menu());
 
-	button.onclick = () => remote[action]?.(value);
+// set control actions
+
+const controls = Array.from(document.querySelectorAll('*'))
+	.filter(node => Object.keys(node.dataset).length);
+
+for (const control of controls) {
+	const actions = control.dataset;
+
+	for (const key in actions) {
+		if (!key.startsWith('on')) continue;
+
+		const [action, args] = actions[key].split(':');
+
+		if (!(action in remote)) continue;
+
+		const type = key.replace(/^on/, '');
+		const argList = args ? args.split(',').map(arg => arg.trim()) : [];
+
+		control.addEventListener(type, () => {
+			// get dynamic values
+			const values = argList.map(arg => arg.startsWith('#')
+				? document.getElementById(arg.slice(1))?.value
+				: arg);
+			remote[action](...values);
+		});
+	}
+}
+
+// popup functionality
+
+const popupDialog = $('popup-dialog');
+const popupContent = $('popup-content');
+const popupTemplates = $('popup-templates');
+
+popupDialog.addEventListener('close', () => popupTemplates.appendChild(popupContent.firstElementChild));
+
+function showPopup(name) {
+	const content = popupTemplates.querySelector(`#${name}`);
+
+	if (content) {
+		popupContent.appendChild(content)
+			.dispatchEvent(new Event('load'));
+		popupDialog.showModal();
+	}
 }
 
 })()

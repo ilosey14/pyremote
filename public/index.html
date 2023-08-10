@@ -23,20 +23,20 @@
 			</div>
 		</div>
 		<div id="button-container">
-			<button data-action="back">
+			<button class="width-100" data-onclick="back">
 				<img src="/img/arrow-left.svg" alt="back">
 			</button>
-			<button data-action="menu">
+			<button class="width-100" data-onclick="menu">
 				<img src="/img/menu.svg" alt="open menu">
 			</button>
-			<button data-action="forward">
+			<button class="width-100" data-onclick="forward">
 				<img src="/img/arrow-right.svg" alt="forward">
 			</button>
 		</div>
 		<div id="text-container">
 			<form id="text-form">
 				<div class="text-wrapper">
-					<input type="text" id="text-input" placeholder="..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+					<input type="text" id="text-input" class="width-100" placeholder="..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
 				</div>
 				<button type="reset">
 					<img src="/img/x.svg" alt="clear">
@@ -47,49 +47,85 @@
 	<div id="menu">
 		<div id="menu-grid">
 			<div>
-				<button data-action="menu" style="border-radius:100%">
+				<button data-onclick="menu" style="border-radius:100%">
 					<img src="/img/x.svg" alt="close menu">
 				</button>
 			</div>
-			<button data-action="click" data-value="0">
+			<button data-onclick="click:0">
 				<img src="/img/click.svg" alt="left click">
 			</button>
-			<button data-action="click" data-value="1">
+			<button data-onclick="click:1">
 				<img src="/img/mclick.svg" alt="middle click">
 			</button>
-			<button data-action="click" data-value="2">
+			<button data-onclick="click:2">
 				<img src="/img/rclick.svg" alt="right click">
 			</button>
-			<button data-action="dblclick">
+			<button data-onclick="dblclick">
 				<img src="/img/dbclick.svg" alt="double click">
 			</button>
-			<button data-action="key" data-value="windows">
+			<button data-onclick="key:windows">
 				<img src="/img/windows.svg" alt="windows">
 			</button>
-			<button data-action="key" data-value="escape">Esc</button>
-			<button data-action="key" data-value="delete">Del</button>
-			<button data-action="key" data-value="enter">
+			<button data-onclick="key:escape">Esc</button>
+			<button data-onclick="key:delete">Del</button>
+			<button data-onclick="key:enter">
 				<img src="/img/enter.svg" alt="enter">
 			</button>
-			<button data-action="key" data-value="tab">Tab</button>
-			<div></div>
-			<button data-action="key" data-value="up">
+			<button data-onclick="key:tab">Tab</button>
+			<button data-onclick="popup:key-combination">
+				<img src="/img/key-combination.svg" alt="key combination">
+			</button>
+			<button data-onclick="key:up">
 				<img src="/img/arrow-up.svg" alt="up arrow">
 			</button>
+			<button data-onclick="popup:fn">Fn</button>
 			<div></div>
-			<div></div>
-			<button data-action="key" data-value="left">
+			<button data-onclick="key:left">
 				<img src="/img/arrow-left.svg" alt="up arrow">
 			</button>
-			<button data-action="key" data-value="down">
+			<button data-onclick="key:down">
 				<img src="/img/arrow-down.svg" alt="up arrow">
 			</button>
-			<button data-action="key" data-value="right">
+			<button data-onclick="key:right">
 				<img src="/img/arrow-right.svg" alt="up arrow">
 			</button>
 		</div>
 	</div>
 	<div id="menu-mask"></div>
+	<dialog id="popup-dialog">
+		<div id="popup-content"></div>
+		<form method="dialog"><button>Close</button></form>
+	</dialog>
+	<div id="popup-templates">
+		<form id="key-combination" class="flex-wrap flex-wrap-grow" onload="this.reset()" data-onload="resetModifiers">
+			<input type="checkbox" value="ctrl" id="key-combination-ctrl" data-onchange="toggleModifier:ctrl">
+			<label for="key-combination-ctrl">CTRL</label>
+			<input type="checkbox" value="alt" id="key-combination-alt" data-onchange="toggleModifier:alt">
+			<label for="key-combination-alt">ALT</label>
+			<input type="checkbox" value="shift" id="key-combination-shift" data-onchange="toggleModifier:shift">
+			<label for="key-combination-shift">SHIFT</label>
+			<input type="checkbox" value="win" id="key-combination-win" data-onchange="toggleModifier:win">
+			<label for="key-combination-win">WIN</label>
+			<span>+&nbsp;</span>
+			<input type="text" id="key-combination-key" placeholder="Key" style="width:2em;text-align:center"
+				spellcheck="false" autocapitalize="none" autocorrect="off" autocomplete="off"
+				onkeydown="this.value=null" data-onkeyup="keyWithModifiers:#key-combination-key">
+		</form>
+		<div id="fn" class="grid-col-4">
+			<button data-onclick="key:f1">F1</button>
+			<button data-onclick="key:f2">F2</button>
+			<button data-onclick="key:f3">F3</button>
+			<button data-onclick="key:f4">F4</button>
+			<button data-onclick="key:f5">F5</button>
+			<button data-onclick="key:f6">F6</button>
+			<button data-onclick="key:f7">F7</button>
+			<button data-onclick="key:f8">F8</button>
+			<button data-onclick="key:f9">F9</button>
+			<button data-onclick="key:f10">F10</button>
+			<button data-onclick="key:f11">F11</button>
+			<button data-onclick="key:f12">F12</button>
+		</div>
+	</div>
 	<script src="pyremote.js"></script>
 </body>
 </html>
