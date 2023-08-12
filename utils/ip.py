@@ -63,7 +63,12 @@ def _get_local_fallback() -> str|None:
     import socket
 
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(('1.1.1.1', 80))
+
+    try:
+        s.connect(('1.1.1.1', 80))
+    except:
+        return 'localhost'
+
     ip = s.getsockname()[0]
     s.close()
 

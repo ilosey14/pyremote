@@ -75,6 +75,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         with open(filename, 'rb') as file:
             self.wfile.write(file.read())
 
+    def do_PING(self):
+        self.write_headers()
+
     def do_MOVE(self):
         x, y = self.parse_params(('x', float), ('y', float))
 
@@ -118,24 +121,24 @@ class RequestHandler(BaseHTTPRequestHandler):
     def do_KEY(self):
         key = self.parse_params(('k', unquote))
 
-        if len(key) > 1:
-            keyboard.send(key)
-        # capital letters must use shift
-        elif key >= 'A' and key <= 'Z':
-            keyboard.send(f'shift+{key.lower()}')
-        # handle irregularities
-        elif key in '[]\\':
-            keyboard.send(keyboard.key_to_scan_codes(key)[-1])
-        elif key in '{}~':
-            code = keyboard.key_to_scan_codes(key)[-1]
-            keyboard.press('shift')
-            keyboard.send(code)
-            keyboard.release('shift')
-        else:
-            try:
+        try:
+            if len(key) > 1:
+                keyboard.send(key)
+            # capital letters must use shift
+            elif key >= 'A' and key <= 'Z':
+                keyboard.send(f'shift+{key.lower()}')
+            # handle irregularities
+            elif key in '[]\\':
+                keyboard.send(keyboard.key_to_scan_codes(key)[-1])
+            elif key in '{}~':
+                code = keyboard.key_to_scan_codes(key)[-1]
+                keyboard.press('shift')
+                keyboard.send(code)
+                keyboard.release('shift')
+            else:
                 keyboard.write(key)
-            except:
-                print(f'Unsupported key "{key}".')
+        except:
+            print(f'Unsupported key "{key}".')
 
         self.write_headers()
 

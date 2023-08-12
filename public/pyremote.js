@@ -14,6 +14,8 @@ const buttons = {
 };
 const keyState = { };
 const remote = {
+	ping: () => request('PING').then(
+		() => isErrorBanner() && showSuccessBanner('Connected!')),
 	move: (x, y) => request('MOVE', { x, y }),
 	down: () => request('DOWN'),
 	up: () => request('UP'),
@@ -21,8 +23,12 @@ const remote = {
 	dblclick: () => request('DBLCLICK'),
 	scroll: d => request('SCROLL', { d }),
 	key: k => request('KEY', { k }),
-	keyWithModifiers: k => remote.key(Object.keys(keyState).filter(key => keyState[key]).join('+') + '+' + k),
-	toggleModifier: (key, state) => keyState[key] = (state === undefined) ? !keyState[key] : (state === 'true'),
+	keyWithModifiers: k => remote.key(
+		Object.keys(keyState)
+			.filter(key => keyState[key]).join('+') + '+' + k),
+	toggleModifier: (key, state) => keyState[key] = (state === undefined)
+		? !keyState[key]
+		: (state === 'true'),
 	resetModifiers: () => Object.keys(keyState).forEach(key => delete keyState[key]),
 	back: () => remote.key('alt+left'),
 	forward: () => remote.key('alt+right'),
@@ -35,7 +41,11 @@ function request(method, data) {
 		? '/?' + new URLSearchParams(data).toString()
 		: '/';
 
-	return fetch(url, { method });
+	return fetch(url, { method })
+		.catch(e => {
+			showErrorBanner('Could not reach server.', true);
+			return Promise.reject(e);
+		});
 };
 
 function debounce(f, delay) {
@@ -258,6 +268,47 @@ function showPopup(name) {
 			.dispatchEvent(new Event('load'));
 		popupDialog.showModal();
 	}
+}
+
+// test connection
+
+const banner = $('banner');
+const bannerMask = $('banner-mask');
+
+document.addEventListener('visibilitychange', () => {
+	if (document.visibilityState === 'visible')
+		remote.ping();
+});
+
+window.addEventListener('offline', () => showErrorBanner('No network connection.'));
+window.addEventListener('online', () => showSuccessBanner('Connected!'));
+
+function showErrorBanner(message, showRetry = false) {
+	banner.textContent = message;
+
+	banner.classList.remove('success');
+	banner.classList.add('show', 'error');
+	bannerMask.classList.add('show');
+	bannerMask.classList.toggle('retry', showRetry);
+}
+
+function showSuccessBanner(message) {
+	banner.textContent = message;
+
+	banner.classList.remove('error');
+	banner.classList.add('show', 'success');
+	bannerMask.classList.remove('show');
+
+	window.setTimeout(hideBanner, 3000);
+}
+
+function hideBanner() {
+	banner.classList.remove('show', 'success', 'error');
+	bannerMask.classList.remove('show', 'retry');
+}
+
+function isErrorBanner() {
+	return banner.classList.contains('error');
 }
 
 })()

@@ -12,7 +12,7 @@
 	<main>
 		<div id="touch-container">
 			<button id="touch-pad"></button>
-			<div id="scroll-bar">
+			<div id="scroll-bar" class="round">
 				<button id="scroll-up">
 					<img src="/img/arrow-up.svg" alt="scroll up">
 				</button>
@@ -33,7 +33,7 @@
 				<img src="/img/arrow-right.svg" alt="forward">
 			</button>
 		</div>
-		<div id="text-container">
+		<div id="text-container" class="round">
 			<form id="text-form">
 				<div class="text-wrapper">
 					<input type="text" id="text-input" class="width-100" placeholder="..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
@@ -44,7 +44,9 @@
 			</form>
 		</div>
 	</main>
-	<div id="menu">
+
+	<!-- menu -->
+	<div id="menu" class="round-top">
 		<div id="menu-grid">
 			<div>
 				<button data-onclick="menu" style="border-radius:100%">
@@ -96,6 +98,8 @@
 		<div id="popup-content"></div>
 		<form method="dialog"><button>Close</button></form>
 	</dialog>
+
+	<!-- popup -->
 	<div id="popup-templates">
 		<form id="key-combination" class="flex-wrap flex-wrap-grow" onload="this.reset()" data-onload="resetModifiers">
 			<input type="checkbox" value="ctrl" id="key-combination-ctrl" data-onchange="toggleModifier:ctrl">
@@ -126,6 +130,13 @@
 			<button data-onclick="key:f12">F12</button>
 		</div>
 	</div>
+
+	<!-- banner -->
+	<div id="banner-mask">
+		<button id="banner-mask-retry-button" data-onclick="ping">Retry</button>
+	</div>
+	<div id="banner" class="round"></div>
+
 	<script src="pyremote.js"></script>
 </body>
 </html>

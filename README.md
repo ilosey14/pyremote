@@ -52,6 +52,7 @@ the following request methods:
 | Method   | Params                  | Description                         |
 | -------- | ----------------------- | ----------------------------------- |
 | GET      |                         | The remote interface page           |
+| PING     |                         | Tests the connection (not ICMP)     |
 | MOVE     | `x={number}&y={number}` | Moves the mouse by x and y pixels   |
 | DOWN     |                         | Presses the mouse down (left click) |
 | UP       |                         | Releases the pressed mouse          |
@@ -144,10 +145,6 @@ Further info on `udev` rules:
 
 ## TODO
 
-- [ ] Check for connection
-  - `request('PING').then([onsuccess], [onfailure]);`
-  - Show banner overlay with [try again] button
-    - Do the same on any failed request
 - [ ] Add user settings to menu
   - Double click delay
   - Right click hold duration

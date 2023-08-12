@@ -5,6 +5,10 @@
 	--gray: #555;
 	--light-gray: #777;
 	--white: #f1f1f1;
+	--green: green;
+	--light-green: lightgreen;
+	--red: darkred;
+	--light-red: lightcoral;
 
 	--background: var(--black);
 	--foreground: var(--white);
@@ -46,7 +50,6 @@ body {
 	background-color: var(--background);
 	color: var(--foreground);
 }
-div { border-radius: var(--border-radius) }
 main {
 	display: grid;
 	grid-template-rows: 1fr auto auto;
@@ -96,6 +99,9 @@ button > img {
 	gap: 0.5em;
 }
 .border-radius-100 { border-radius: 100% }
+.round { border-radius: var(--border-radius) }
+.round-top { border-radius: var(--border-radius) var(--border-radius) 0 0 }
+.round-bottom { border-radius: 0 0 var(--border-radius) var(--border-radius) }
 .width-100 { width: 100% }
 /* ids */
 #touch-pad { background-color: var(--touch-pad) }
@@ -123,8 +129,6 @@ button > img {
 	max-height: 100%;
 	padding: 0.5em;
 	background: var(--active) linear-gradient(to bottom, var(--active), var(--accent) 200%);
-	border-bottom-left-radius: 0;
-	border-bottom-right-radius: 0;
 	opacity: 0;
 	overflow-y: auto;
 	transition:
@@ -180,3 +184,53 @@ button > img {
 }
 #popup-content { margin-bottom: 0.5em }
 #popup-templates { display: none }
+#banner {
+	display: none;
+	position: absolute;
+	top: -100%;
+	left: 0;
+	right: 0;
+	margin: 0.2em;
+	padding: 1em;
+	background-color: var(--gray);
+	color: var(--foreground);
+	transition: top var(--transition-duration);
+	z-index: 5;
+}
+#banner.show {
+	display: unset;
+	top: 0;
+}
+#banner::before { margin-right: 0.5em }
+#banner.success {
+	background-color: var(--light-green);
+	color: var(--green);
+}
+#banner.success::before { content: '✅' }
+#banner.error {
+	background-color: var(--light-red);
+	color: var(--red);
+}
+#banner.error::before { content: '❌' }
+#banner-mask {
+	display: none;
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background-color: var(--dark-gray);
+	opacity: 0;
+	transition: opacity var(--transition-duration);
+	z-index: 4;
+}
+#banner-mask.show {
+	display: unset;
+	opacity: 0.5;
+}
+#banner-mask-retry-button {
+	display: none;
+	margin: 5em auto;
+	padding: 1em 2em;
+}
+#banner-mask.retry #banner-mask-retry-button { display: unset }
