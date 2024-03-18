@@ -3,9 +3,10 @@ from os import path
 from urllib.parse import urlparse, parse_qs, unquote
 from mimetypes import guess_type
 import math
+import json
 
-import mouse
-import keyboard
+from pynput.mouse import Button, Controller as Mouse
+from pynput.keyboard import Key, Controller as Keyboard
 
 from utils import ip
 
@@ -14,6 +15,9 @@ hostname = ip.get_local()
 port = 8080
 
 class RequestHandler(BaseHTTPRequestHandler):
+
+    __mouse = Mouse()
+    __keyboard = Keyboard()
 
     def write_headers(self, code: int = 200, content_type: str = None):
         self.send_response(code)
@@ -55,6 +59,17 @@ class RequestHandler(BaseHTTPRequestHandler):
             print('[ERROR] Invalid param: ' + str(value))
             return None
 
+    def get_button(self, number: int) -> Button:
+        match number:
+            case 0:
+                return Button.left
+            case 1:
+                return Button.middle
+            case 2:
+                return Button.right
+            case _:
+                return Button.left
+
     #
     #
     #
@@ -81,62 +96,81 @@ class RequestHandler(BaseHTTPRequestHandler):
     def do_MOVE(self):
         x, y = self.parse_params(('x', float), ('y', float))
 
-        mouse.move(x, y, absolute=False)
+        self.__mouse.move(x, y)
         self.write_headers()
 
     def do_DOWN(self):
-        mouse.press()
+        number = self.parse_params(('b', int))
+        button = self.get_button(number)
+
+        self.__mouse.press(button)
         self.write_headers()
 
     def do_UP(self):
-        mouse.release()
+        number = self.parse_params(('b', int))
+        button = self.get_button(number)
+
+        self.__mouse.release(button)
         self.write_headers()
 
     def do_CLICK(self):
-        enum = self.parse_params(('b', int))
+        number = self.parse_params(('b', int))
+        button = self.get_button(number)
 
-        if (enum == 0):
-            button = mouse.LEFT
-        elif (enum == 1):
-            button = mouse.MIDDLE
-        elif (enum == 2):
-            button = mouse.RIGHT
-        else:
-            self.write_headers(400)
-            return
-
-        mouse.click(button)
+        self.__mouse.click(button)
         self.write_headers()
 
     def do_DBLCLICK(self):
-        mouse.double_click()
+        number = self.parse_params(('b', int))
+        button = self.get_button(number)
+
+        self.__mouse.click(button, 2)
         self.write_headers()
 
     def do_SCROLL(self):
         delta = self.parse_params(('d', float))
 
-        mouse.wheel(math.ceil(delta))
+        self.__mouse.scroll(0, delta > 0 and math.ceil(delta) or math.floor(delta))
         self.write_headers()
 
     def do_KEY(self):
         key = self.parse_params(('k', unquote))
+        length = len(key);
 
         try:
-            if len(key) > 1:
-                keyboard.send(key)
-            # capital letters must use shift
-            elif key >= 'A' and key <= 'Z':
-                keyboard.send(f'shift+{key.lower()}')
-            # handle irregularities
-            elif key in '[]\\':
-                keyboard.send(keyboard.key_to_scan_codes(key)[-1])
-            elif key in '{}~':
-                code = keyboard.key_to_scan_codes(key)[-1]
-                keyboard.press('shift')
-                keyboard.send(code)
-                keyboard.release('shift')
-            else:
-                keyboard.write(key)
+            if length > 1:
+                # parse combination
+                if '+' in key:
+                    keys = key.split('+')
+                    mods = [k.lower() for k in keys[:-1]]
+                    key = keys[-1]
+
+                    # verify modifiers
+                    for k in mods:
+                        if not k in Key.__members__:
+                            key = '+'.join((*mods, key))
+                            raise
+
+                    # press keys in order
+                    for k in mods:
+                        self.__keyboard.press(Key[k])
+
+                    self.__keyboard.tap(key)
+                    mods.reverse()
+
+                    for k in mods:
+                        self.__keyboard.release(Key[k])
+
+                # must be a single, named key
+                else:
+                    key = key.lower()
+
+                    if (key in Key.__members__):
+                        self.__keyboard.tap(Key[key])
+                    else:
+                        raise
+            elif length == 1:
+                self.__keyboard.tap(key)
         except:
             print(f'Unsupported key "{key}".')
 

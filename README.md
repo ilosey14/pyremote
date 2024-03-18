@@ -21,7 +21,7 @@ Server started at http://[your_ip]:8080
 ...
 ```
 
-> Note: on Linux systems, user inputs require root permissions or a `udev` rule (see Installation below)
+> Note: on Linux systems, user inputs may require root permissions or a `udev` rule (see Installation below)
 
 2. Connect to your pyremote server from another device in a web browser
 
@@ -49,17 +49,17 @@ If that doesn't work, then blame your phone and give up.
 The backend is a simple `HTTPServer` python server which supports
 the following request methods:
 
-| Method   | Params                  | Description                         |
-| -------- | ----------------------- | ----------------------------------- |
-| GET      |                         | The remote interface page           |
-| PING     |                         | Tests the connection (not ICMP)     |
-| MOVE     | `x={number}&y={number}` | Moves the mouse by x and y pixels   |
-| DOWN     |                         | Presses the mouse down (left click) |
-| UP       |                         | Releases the pressed mouse          |
-| CLICK    | `b={0\|1\|2}`           | Clicks a mouse button               |
-| DBLCLICK |                         | Double-clicks the left mouse button |
-| SCROLL   | `d={number}`            | Scrolls by a delta amount           |
-| KEY      | `k={string}`            | Sends a keyboard key                |
+| Method   | Params                  | Description                       |
+| -------- | ----------------------- | --------------------------------- |
+| GET      |                         | The remote interface page         |
+| PING     |                         | Tests the connection (not ICMP)   |
+| MOVE     | `x={number}&y={number}` | Moves the mouse by x and y pixels |
+| DOWN     | `b={0\|1\|2}`           | Presses the mouse down            |
+| UP       | `b={0\|1\|2}`           | Releases the pressed mouse        |
+| CLICK    | `b={0\|1\|2}`           | Clicks a mouse button             |
+| DBLCLICK | `b={0\|1\|2}`           | Double-clicks a mouse button      |
+| SCROLL   | `d={number}`            | Scrolls by a delta amount         |
+| KEY      | `k={string}`            | Sends a keyboard key              |
 
 These methods send OS events to mimic keyboard and mouse inputs.
 Any connected device(s) can send requests.
@@ -67,13 +67,7 @@ This project includes a frontend to interpret your inputs and interface with the
 
 ## Installation
 
-Tested on Python 3.10
-
-Dependencies
-
-```bash
-$ pip install mouse keyboard
-```
+Tested on Python 3.10+
 
 Clone the repo
 
@@ -82,40 +76,20 @@ $ git clone https://github.com/ilosey14/pyremote.git
 $ cd pyremote
 ```
 
+Install Dependencies
+
+```bash
+$ python -m pip install -r requirements.txt
+```
+
 I recommend adding a shortcut to your start menu or desktop.
 Set the icon from `public/favicon.ico`
 
 ### Linux
 
-*This section details my workarounds for mouse support and user-level input access.*
-
-#### Supporting Mouse Clicks
-
-The `mouse` package may need to be modified to support mouse clicks.
-See <a href="https://github.com/boppreh/mouse/issues/37" target="_blank">this</a> GitHub issue for more info,
-which was corrected by <a href="https://github.com/boppreh/mouse/commit/9c5630f0d9d6f4f76cf56291ce3f864e87ad1105" target="_blank">this</a> commit.
-
-However, until the pip package is updated, the easiest fix is to copy over the updated source.
-The file will be located at `/usr/lib/python3.X/site-packages/mouse/_nixcommon.py` or similar.
-The updated source can be found <a href="https://raw.githubusercontent.com/boppreh/mouse/9c5630f0d9d6f4f76cf56291ce3f864e87ad1105/mouse/_nixcommon.py" target="_blank">here</a>.
-
-If the up-to-date source does not work, you may instead revert the `_nixcommon.py` file back to its original form and explicitly add your desired event codes.
-The complete list is defined in `/usr/include/linux/input-event-codes.h`.
-For example:
-
-```diff
-/usr/lib/python3.X/site-packages/mouse/_nixcommon.py
-@@ -32,2 +32,5 @@
----
-* [32][32]     for i in range(256):
-* [33][33]         fcntl.ioctl(uinput, UI_SET_KEYBIT, i)
-+     [34]     fcntl.ioctl(uinput, UI_SET_KEYBIT, 0X110) # BTN_LEFT
-+     [35]     fcntl.ioctl(uinput, UI_SET_KEYBIT, 0X111) # BTN_RIGHT
-+     [36]     fcntl.ioctl(uinput, UI_SET_KEYBIT, 0X112) # BTN_MIDDLE
-```
-
 #### Permissions
 
+In some cases, elevated permission is required to control the host system.
 You can permit user access to the `uinput` kernel module without elevation (sudo, su, doas, etc.)
 by adding a new `udev` rule.
 
@@ -125,20 +99,12 @@ by adding a new `udev` rule.
 KERNEL="uinput", TAG+="uaccess"
 ```
 
-The `mouse` and `keyboard` packages look for an elevated run-level rather than `uinput` access.
-Force these checks to pass by further editing the `_nixcommon.py` files:
-
-```python
-# /usr/lib/python3.X/site-packages/{mouse,keyboard}/_nixcommon.py
-...
-def ensure_root():
-    return True
-    # comment original code
-```
-
 Discussions on user access to `uinput`:
 - [Stack Overflow](https://stackoverflow.com/questions/11939255/writing-to-dev-uinput-on-ubuntu-12-04)
 - [Steam Forums](https://steamcommunity.com/app/353370/discussions/2/1735465524711324558/)
+
+Automatic module loading:
+- [Arch Wiki](https://wiki.archlinux.org/title/Kernel_module#Automatic_module_loading)
 
 Further info on `udev` rules:
 - [Arch Wiki](https://wiki.archlinux.org/title/Udev)
@@ -161,13 +127,9 @@ The Python logos (in several variants) are use trademarks of the PSF as well.
 <br>
 https://www.python.org/psf/trademarks/
 
-mouse
+pynput
 <br>
-https://pypi.org/project/mouse/
-
-keyboard
-<br>
-https://pypi.org/project/keyboard/
+https://pypi.org/project/pynput/
 
 Icons are from the Bootstrap Icons pack.
 Icons and documentation licensed under [MIT](https://github.com/twbs/icons/blob/main/LICENSE.md).
