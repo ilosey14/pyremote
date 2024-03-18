@@ -1,5 +1,6 @@
-window.addEventListener('error', function () {
-	alert(Array.from(arguments).join('\n'))
+window.addEventListener('error', e => {
+	if (e.message !== 'Script error.')
+		alert(`${e.filename} (${e.lineno},${e.colno}): ${e.message}`)
 });
 
 (function () {
@@ -17,10 +18,10 @@ const remote = {
 	ping: () => request('PING').then(
 		() => isErrorBanner() && showSuccessBanner('Connected!')),
 	move: (x, y) => request('MOVE', { x, y }),
-	down: () => request('DOWN'),
-	up: () => request('UP'),
+	down: b => request('DOWN', { b }),
+	up: b => request('UP', { b }),
 	click: b => request('CLICK', { b }),
-	dblclick: () => request('DBLCLICK'),
+	dblclick: b => request('DBLCLICK', { b }),
 	scroll: d => request('SCROLL', { d }),
 	key: k => request('KEY', { k }),
 	keyWithModifiers: k => remote.key(
@@ -48,7 +49,7 @@ function request(method, data) {
 		});
 };
 
-function debounce(f, delay) {
+function throttle(f, delay) {
 	if (typeof f !== 'function')
 		throw '[debounce] first argument must be a function.';
 
@@ -72,6 +73,7 @@ function Pointer(scale) {
 	this.isDblClick = false;
 	this.isRClick = false;
 	this.didMove = false;
+	this.timeoutId = 0;
 
 	this.downTimestamp
 		= this.upTimestamp
@@ -81,8 +83,21 @@ function Pointer(scale) {
 	this.rClickDelay = Pointer.rClickDelay;
 }
 
-Pointer.dblClickDelay = 500;
-Pointer.rClickDelay = 500;
+Pointer.dblClickDelay = 300;
+Pointer.rClickDelay = 300;
+Pointer.touchPointRadius = 16;
+
+/**
+ * Determines whether the given point is distinct from the current pointer location.
+ * @param {number} x
+ * @param {number} y
+ */
+Pointer.prototype.isDistinct = function (x, y) {
+	const x1 = this.lastX;
+	const y1 = this.lastY;
+
+	return Math.sqrt((x1 - x) ** 2 + (y1 - y) ** 2) > Pointer.touchPointRadius;
+};
 
 /**
  * Sets the pointer in the down position.
@@ -92,12 +107,15 @@ Pointer.rClickDelay = 500;
 Pointer.prototype.setDown = function (x, y) {
 	const now = Date.now();
 
+	this.isDblClick = (now - this.dblClickDelay < this.downTimestamp) && !this.isDistinct(x, y);
 	this.lastX = x;
 	this.lastY = y;
 	this.isDown = true;
-	this.isDblClick = (now - this.dblClickDelay < this.downTimestamp); // before setting timestamp
 	this.didMove = false;
 	this.downTimestamp = now;
+
+	if (this.isDblClick)
+		window.clearTimeout(this.timeoutId);
 };
 
 /**
@@ -148,18 +166,18 @@ const round = (x, digits = 0) => {
 
 touchPad.addEventListener('pointerdown', e => touch.setDown(e.clientX, e.clientY));
 
-touchPad.addEventListener('pointermove', debounce(e => {
+touchPad.addEventListener('pointermove', throttle(e => {
 	if (!touch.isDown) return;
 
 	const dx = touch.scale * (e.clientX - touch.lastX);
 	const dy = touch.scale * (e.clientY - touch.lastY);
 
+	// check for click and drag
+	// if (touch.isDblClick && !touch.didMove)
+	// 	remote.down();
+
 	// ignore sending no debounced movement
 	if (dx === 0 && dy === 0) return;
-
-	// check for click and drag
-	if (touch.isDblClick && !touch.didMove)
-		remote.down();
 
 	remote.move(dx, dy);
 	touch.setMove(e.clientX, e.clientY);
@@ -171,22 +189,31 @@ touchPad.addEventListener('pointerup', e => {
 	// ignore drag
 	if (touch.didMove) {
 		// finish click and drag
-		touch.isDblClick && remote.up();
+		touch.isDblClick && remote.up(buttons.LEFT);
 
 		return;
 	}
 
 	// check for right click
-	const button = touch.isRClick
+	const button = touch.isDblClick
+		? buttons.DBLCLICK
+		: touch.isRClick
 		? buttons.RIGHT
 		: e.button;
 
 	// invoke action
 	switch (button) {
 		case buttons.LEFT:
-		case buttons.MIDDLE:
+			remote.down(button);
+			touch.timeoutId = window.setTimeout(() => remote.up(button), Pointer.dblClickDelay);
+			break;
 		case buttons.RIGHT:
+		case buttons.MIDDLE:
 			remote.click(button);
+			break;
+		case buttons.DBLCLICK:
+			remote.up(button);
+			remote.dblclick(button);
 			break;
 		case buttons.BACK:
 			remote.back();
@@ -199,7 +226,7 @@ touchPad.addEventListener('pointerup', e => {
 
 scrollPad.addEventListener('pointerdown', e => scroll.setDown(0, e.clientY));
 
-scrollPad.addEventListener('pointermove', debounce(e => {
+scrollPad.addEventListener('pointermove', throttle(e => {
 	// can invert scrolling with negative scale
 	const dy = round(scroll.scale * (e.clientY - scroll.lastY), 1);
 
